@@ -27,13 +27,51 @@ angular.module('starter.controllers', [])
   };
 })
 
-.controller('FileDemoController', function(){
+.controller('FileDemoController',['$http', 'md5', function($http, md5){
   var vm = this;
   vm.result = {};
+
+  var writeToFile = function(fileName, data) {
+    data = JSON.stringify(data, null, '\t');
+    window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function (directoryEntry) {
+      directoryEntry.getFile(fileName, { create: true }, function (fileEntry) {
+        fileEntry.createWriter(function (fileWriter) {
+          fileWriter.onwriteend = function (e) {
+                          // for real-world usage, you might consider passing a success callback
+                          console.log('Write of file "' + fileName + '"" completed.');
+                        };
+
+                        fileWriter.onerror = function (e) {
+                          // you could hook this up with our global error handler, or pass in an error callback
+                          console.log('Write failed: ' + e.toString());
+                        };
+
+                        var blob = new Blob([data], { type: 'text/plain' });
+                        fileWriter.write(blob);
+                      }, errorHandler.bind(null, fileName));
+          }, errorHandler.bind(null, fileName));
+        }, errorHandler.bind(null, fileName));papp
+  };
+
+  vm.fetch = function(path) {
+    var md5Path = md5.createHash(path);
+
+    console.log(path);
+    console.log(md5Path);
+    _request(path).success(function(data){
+      writeToFile(md5Path, data);
+    }).error(function(data, status){console.log('fetch error'); console.log(status)});
+  };
+
+  vm.grab = function(identifier) {
+
+  };
 
   vm.read = function(){
     function readFromFile(fileName, cb) {
       var pathToFile = cordova.file.dataDirectory + fileName;
+      console.log("pathToFile")
+      console.log(pathToFile);
       window.resolveLocalFileSystemURL(pathToFile, function (fileEntry) {
         fileEntry.file(function (file) {
           var reader = new FileReader();
@@ -58,30 +96,18 @@ angular.module('starter.controllers', [])
 
   };
 
+
+
   vm.write = function(){
-    function writeToFile(fileName, data) {
-      data = JSON.stringify(data, null, '\t');
-      window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function (directoryEntry) {
-        directoryEntry.getFile(fileName, { create: true }, function (fileEntry) {
-          fileEntry.createWriter(function (fileWriter) {
-            fileWriter.onwriteend = function (e) {
-                            // for real-world usage, you might consider passing a success callback
-                            console.log('Write of file "' + fileName + '"" completed.');
-                          };
-
-                          fileWriter.onerror = function (e) {
-                            // you could hook this up with our global error handler, or pass in an error callback
-                            console.log('Write failed: ' + e.toString());
-                          };
-
-                          var blob = new Blob([data], { type: 'text/plain' });
-                          fileWriter.write(blob);
-                        }, errorHandler.bind(null, fileName));
-            }, errorHandler.bind(null, fileName));
-          }, errorHandler.bind(null, fileName));
-    };
-
     writeToFile('data.json', { foo: 'bar' });
+  };
+
+  var _request = function(path){
+    var req = {
+     method: 'GET',
+     url: path
+    };
+    return $http.get(path);
   };
 
   var errorHandler = function (fileName, e) {
@@ -110,6 +136,6 @@ angular.module('starter.controllers', [])
 
       console.log('Error (' + fileName + '): ' + msg);
   }
-})
+}])
 
 ;

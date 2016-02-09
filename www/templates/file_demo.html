@@ -1,7 +1,7 @@
 <ion-view view-title="FILE STORAGE DEMO">
   <ion-content>
     <ion-list>
-    <button class="button button-block button-royal" ng-click='file_demo.write()'>write</button>
+    <button class="button button-block button-royal" ng-click='file_demo.fetch("http://vcord-zencoder-test.s3.amazonaws.com/thumbs/3422000a-c94c-47cd-9acf-2d0745604c25.png")'>fetch</button>
     <button class="button button-block button-royal" ng-click='file_demo.read()'>read</button>
     <div ng-model="file_demo.result"></div>
     </ion-list>
